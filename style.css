@@ -1,0 +1,741 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  color: #fff;
+  min-height: 100vh;
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bomberman-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.game-header {
+  text-align: center;
+  padding: 10px 0 20px;
+}
+
+.game-header h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  text-shadow: 0 0 20px rgba(255, 100, 50, 0.5);
+  margin-bottom: 5px;
+}
+
+.phase-info {
+  font-size: 1rem;
+  color: #888;
+  font-weight: 300;
+}
+
+.game-main {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  min-width: 0;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-width: 0;
+  width: 260px;
+  flex: 0 0 260px;
+}
+
+.performance-monitor {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 15px;
+  font-family: 'Courier New', monospace;
+}
+
+.perf-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+  border-bottom: 1px solid #444;
+  padding-bottom: 5px;
+}
+
+.perf-fps {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.perf-detail {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin: 3px 0;
+}
+
+.perf-status {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #444;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.player-info {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.info-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+  border-bottom: 1px solid #444;
+  padding-bottom: 5px;
+}
+
+.info-item {
+  font-size: 0.85rem;
+  color: #ccc;
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.info-label { color: #aaa; }
+.info-value { color: #fff; font-weight: bold; }
+.info-value.lives { letter-spacing: 2px; }
+
+.controls-info {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.control-item {
+  font-size: 0.8rem;
+  color: #888;
+  margin: 5px 0;
+  font-family: 'Courier New', monospace;
+}
+
+.test-animation-container { display: none; }
+
+.game-footer {
+  text-align: center;
+  padding: 15px;
+  color: #666;
+  font-size: 0.9rem;
+  border-top: 1px solid #333;
+}
+
+
+.game-board-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  min-width: 0;
+  width: 720px;
+  max-width: 100%;
+  flex: 0 1 720px;
+}
+
+.game-board {
+  background: #1a1a2a;
+  outline: 4px solid #444;
+  transform-origin: top left;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  /* Containment isolates board layout and paint work from the sidebar and header. */
+  contain: layout style paint;
+  overflow: hidden;
+}
+
+.game-board.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 400px;
+  min-height: 300px;
+  color: #888;
+}
+
+
+#fps-counter {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: 'Courier New', monospace;
+  pointer-events: none;
+  line-height: 1.4;
+}
+
+#fps-counter .fps-number {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #4f4;
+}
+
+#fps-counter .fps-detail {
+  font-size: 0.7rem;
+  color: #aaa;
+}
+
+/* Strict containment keeps fixed-size tiles independent of nearby layout and paint work. */
+
+.tile {
+  position: absolute;
+  box-sizing: border-box;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  contain: strict;
+}
+
+.tile-empty {
+  background-image: url('./assets/images/map/floor.png');
+  background-color: #1a1a2a;
+}
+
+.tile-wall {
+  background-image: url('./assets/images/map/wall.png');
+  background-color: #444;
+}
+
+.tile-block {
+  background-image: url('./assets/images/map/block.png');
+  background-color: #8B4513;
+}
+
+.spawn-marker {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  z-index: 5;
+  animation: spawn-pulse 2s ease-in-out infinite;
+}
+
+@keyframes spawn-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+
+.players-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.bombs-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.explosions-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.powerups-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Reserve will-change for moving, flashing players to limit promoted layers. */
+
+.player {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 12px;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  will-change: transform, opacity;
+}
+
+.player-1 {
+  background-image: url('./assets/images/players/player1.png');
+  background-size: cover;
+  background-position: center;
+}
+.player-2 {
+  background-image: url('./assets/images/players/player2.png');
+  background-size: cover;
+  background-position: center;
+}
+.player-3 {
+  background-image: url('./assets/images/players/player3.png');
+  background-size: cover;
+  background-position: center;
+}
+.player-4 {
+  background-image: url('./assets/images/players/player4.png');
+  background-size: cover;
+  background-position: center;
+}
+
+/* CSS-animated bombs need no individual will-change promotion. */
+
+.bomb {
+  position: absolute;
+  background-image: url('./assets/images/bombs/bomb.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: bomb-pulse 0.5s ease-in-out infinite;
+}
+
+.bomb.about-to-explode {
+  animation: bomb-pulse-fast 0.2s ease-in-out infinite;
+}
+
+@keyframes bomb-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes bomb-pulse-fast {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+
+.explosion {
+  position: absolute;
+  background-image: url('./assets/images/bombs/explosion.png');
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: explosion-anim 0.5s ease-out forwards;
+}
+
+.explosion-center { z-index: 16; }
+.explosion-horizontal { z-index: 15; }
+.explosion-vertical { z-index: 15; }
+
+@keyframes explosion-anim {
+  0% { transform: scale(0.5); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+
+.powerup {
+  position: absolute;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: powerup-float 1s ease-in-out infinite;
+}
+
+.powerup-bomb {
+  background-image: url('./assets/images/powerups/powerup_bomb.png');
+}
+
+.powerup-flame {
+  background-image: url('./assets/images/powerups/powerup_flame.png');
+}
+
+.powerup-speed {
+  background-image: url('./assets/images/powerups/powerup_speed.png');
+}
+
+@keyframes powerup-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+
+.lobby-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 40px 20px;
+}
+
+.lobby-card {
+  background: rgba(15, 20, 35, 0.95);
+  border: 2px solid rgba(100, 120, 180, 0.3);
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  max-width: 450px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.lobby-title {
+  font-size: 3rem;
+  margin: 0 0 5px 0;
+  text-shadow: 0 0 20px rgba(255, 100, 50, 0.5);
+}
+
+.lobby-subtitle {
+  color: #888;
+  margin: 0 0 30px 0;
+  font-size: 1rem;
+}
+
+.nickname-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.nickname-input {
+  padding: 14px 20px;
+  font-size: 1.1rem;
+  border: 2px solid rgba(100, 120, 180, 0.3);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.nickname-input:focus {
+  border-color: rgba(255, 165, 0, 0.6);
+}
+
+.nickname-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-join {
+  padding: 14px 30px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ff6b6b, #ffa500);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-join:hover { transform: scale(1.03); box-shadow: 0 0 25px rgba(255, 107, 107, 0.4); }
+.btn-join:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.player-counter {
+  margin: 15px 0;
+  font-size: 1.3rem;
+}
+
+.counter-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #ffa500;
+}
+
+.counter-label { color: #aaa; }
+
+.player-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.player-slot {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.player-slot.filled { border-color: rgba(100, 255, 100, 0.3); background: rgba(100, 255, 100, 0.05); }
+.slot-player-1 { border-left: 3px solid #ff4444; }
+.slot-player-2 { border-left: 3px solid #4444ff; }
+.slot-player-3 { border-left: 3px solid #44ff44; }
+.slot-player-4 { border-left: 3px solid #ffff44; }
+.waiting-text { color: #555; font-style: italic; }
+
+.countdown-display { margin-top: 20px; text-align: center; }
+.countdown-label { color: #aaa; display: block; margin-bottom: 5px; }
+.countdown-number { font-size: 4rem; font-weight: bold; color: #ffa500; text-shadow: 0 0 30px rgba(255, 165, 0, 0.5); }
+.waiting-message { color: #777; margin-top: 15px; font-style: italic; }
+
+
+.chat-panel {
+  background: rgba(10, 15, 25, 0.9);
+  border: 1px solid rgba(100, 120, 180, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 450px;
+  width: 100%;
+  margin-top: 15px;
+}
+
+.chat-title {
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  font-weight: bold;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-messages {
+  height: 150px;
+  overflow-y: auto;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  contain: content;
+}
+
+.chat-msg { margin-bottom: 5px; line-height: 1.3; }
+.chat-nick { font-weight: bold; }
+.chat-player-1 .chat-nick { color: #ff6b6b; }
+.chat-player-2 .chat-nick { color: #6b9bff; }
+.chat-player-3 .chat-nick { color: #6bff6b; }
+.chat-player-4 .chat-nick { color: #ffff6b; }
+.chat-text { color: #ccc; }
+
+.chat-input-row {
+  display: flex;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  outline: none;
+  font-size: 0.85rem;
+}
+
+.chat-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
+.chat-send-btn {
+  padding: 10px 16px;
+  border: none;
+  background: rgba(255, 165, 0, 0.3);
+  color: #ffa500;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.chat-send-btn:hover { background: rgba(255, 165, 0, 0.5); }
+
+
+.player-label {
+  position: absolute;
+  top: -18px;
+  left: -20px;
+  right: -20px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.hit-flash {
+  animation: none !important;
+}
+
+.all-players-status {
+  background: rgba(10, 15, 25, 0.9);
+  border: 1px solid rgba(100, 120, 180, 0.2);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.player-status-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.85rem;
+}
+
+.player-status-row.dead { opacity: 0.4; text-decoration: line-through; }
+.player-status-1 { color: #ff6b6b; }
+.player-status-2 { color: #6b9bff; }
+.player-status-3 { color: #6bff6b; }
+.player-status-4 { color: #ffff6b; }
+
+
+.gameover-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.gameover-card {
+  text-align: center;
+  padding: 50px;
+  background: rgba(15, 20, 35, 0.95);
+  border: 2px solid rgba(255, 165, 0, 0.3);
+  border-radius: 20px;
+}
+
+.gameover-title { font-size: 3rem; margin: 0 0 15px 0; }
+.gameover-winner { font-size: 1.5rem; color: #ffa500; margin: 0 0 10px 0; }
+.gameover-draw { font-size: 1.3rem; color: #aaa; }
+.gameover-info { color: #666; margin-top: 20px; font-style: italic; }
+
+.map-info {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.map-info-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+  border-bottom: 1px solid #444;
+  padding-bottom: 5px;
+}
+
+.map-info-item { font-size: 0.85rem; color: #ccc; margin: 5px 0; padding: 3px 0; }
+.wall-info { color: #888; }
+.block-info { color: #cd853f; }
+.empty-info { color: #6a6a8a; }
+
+.regenerate-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  background: linear-gradient(135deg, #4a4a6a, #3a3a5a);
+  border: 1px solid #555;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.regenerate-btn:hover {
+  background: linear-gradient(135deg, #5a5a7a, #4a4a6a);
+  border-color: #777;
+}
+
+.legend {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.legend-title {
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+  border-bottom: 1px solid #444;
+  padding-bottom: 5px;
+}
+
+.legend-item { display: flex; align-items: center; gap: 10px; margin: 8px 0; font-size: 0.8rem; color: #ccc; }
+.legend-tile { width: 24px; height: 24px; border-radius: 3px; flex-shrink: 0; }
+.spawn-preview { background: rgba(255, 100, 100, 0.5); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #fff; }
+
+.info-item.small {
+  font-size: 0.75rem;
+  color: #888;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #333;
+}
+
+@media (max-width: 900px) {
+  .bomberman-app { padding: 12px; }
+  .game-main {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 8px;
+  }
+  .game-board-wrapper { order: -1; flex: none; }
+  .sidebar { width: 100%; max-width: 720px; flex: none; }
+  .chat-panel { align-self: center; }
+  .game-header { padding: 4px 0 12px; }
+  .game-header h1 { font-size: 2rem; }
+  .lobby-screen { min-height: 0; padding: 20px 0; }
+  .lobby-card { padding: 24px 16px; }
+  .chat-input { font-size: 16px; }
+}
+
+.chat-msg { overflow-wrap: anywhere; }
+.join-error { color: #ff8a8a; }
+.nickname-input { min-width: 0; width: 100%; }
+.gameover-card { max-width: 100%; padding: 24px; }
